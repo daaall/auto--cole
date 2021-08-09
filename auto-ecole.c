@@ -26,7 +26,9 @@ int main () {
 	printf ("4-Modifier le montant restant dun candidat \n");
 	printf ("5-Mettre a jour le statut dun examen \n");
 	printf ("6-afficher tous lescandidats \n");
-	printf ("7-quitter le prog \n");
+	printf ("7-modifier les frais dun examen \n");
+	printf ("8-modifier le montant paye \n");
+	printf ("9-quitter le prog \n");
 	
 	printf ("\n");
 	printf ("\n");
@@ -71,8 +73,19 @@ int main () {
 				 affichage();
 				 printf ("\n");
 		break;
-		
-		case 7 : exit(0);
+		case 7 : printf ("modifier les frais dun examen \n");
+				 printf ("donnez le numero de dossier du candidat dont vous souhaitez modifier les frais dun exam \n");
+				 scanf ("%d",&num_doss);
+				 mod_frais (num_doss);
+				 printf ("\n");
+		break;
+		case 8 : printf ("modifier le montant paye \n");
+				 printf ("donnez le numero de dossier du candidat a qui vous souhaitez modifier le montant paye  \n");
+				 scanf ("%d",&num_doss);
+				 mod_mont (num_doss);
+				 printf ("\n");
+		break;
+		case 9 : exit(0);
 		break;
 		default : printf ("le numero nexiste pas dans le menu \n \n");
 		break;

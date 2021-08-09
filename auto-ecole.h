@@ -38,6 +38,10 @@ void ajout (){
 	printf ("introduisez le montant paye \n");
 	scanf ("%f",&cand.mont_p);
 	
+	if (cand.mont_p>18000){
+		printf ("la somme payee depasse les frais du permis, vous devez lui rendre : %.2f \n",cand.mont_p-18000);
+	}
+	
 	cand.mont_r= (18000-cand.mont_p);
 	printf (" le montant restant est : %.2f  \n",cand.mont_r);
 	
@@ -127,7 +131,6 @@ void suppression (){
 void modification_montant(int num_doss, float somme){
 	candidat cand,nv_cand;
 	FILE *F,*INTER;
-	bool jjj=false;
 	int i;
 	
 	INTER=fopen("cand_INTER_mont.txt","w");
@@ -155,7 +158,7 @@ void modification_montant(int num_doss, float somme){
 	}
 	fclose (F);
 	fclose(INTER);
-}
+} 
 
 
 //modification du statut d'un examen
@@ -164,7 +167,7 @@ void modification_statut(int num_doss){
 	int i,val;
 	FILE *F,*INTER;
 	char exam[10];
-	bool jjj=false;
+	
 	
 	printf ("donnez le nom de lexamen dont vous voulez changer le statut \n");
 	scanf (" %s",exam);
@@ -172,39 +175,22 @@ void modification_statut(int num_doss){
 	scanf ("%d",&val);
 	
 	F=fopen ("candidats.txt","r");
-	while (fread(&cand,sizeof(candidat),1,F) && jjj==false){
-		if (cand.num_doss==num_doss)
-			jjj=true;
-	}
-	strcpy(nv_cand.nom,cand.nom);
-	nv_cand.age=cand.age;
-	nv_cand.mont_p=cand.mont_p;
-	nv_cand.mont_r=cand.mont_r;
-	nv_cand.nb_seances=cand.nb_seances;
-	
-	for (i=0;i<3;i++){
-		nv_cand.tab[i].frais=cand.tab[i].frais;
-		strcpy(nv_cand.tab[i].nom,cand.tab[i].nom);
-		
-		if (strcmp(nv_cand.tab[i].nom, exam)==0)
-			nv_cand.tab[i].statut=val;
-		else 
-			nv_cand.tab[i].statut=cand.tab[i].statut;
-	}
-	fclose (F);
-	
-	F=fopen("candidats.txt","r");
 	INTER=fopen("inter_statut.txt","w");
 	
-	while (fread(&cand,sizeof(candidat),1,F)){
-		if (cand.num_doss !=num_doss)
-			fwrite(&cand,sizeof(candidat),1,INTER);
-		else 
-			fwrite(&nv_cand,sizeof(candidat),1,INTER);
+	while (fread(&cand,sizeof(candidat),1,F) ){
+		if (cand.num_doss==num_doss)
+			for (i=0;i<3;i++){
+				if (strcmp(nv_cand.tab[i].nom, exam)==0)
+					nv_cand.tab[i].statut=val;
+			fwrite(&cand,sizeof(candidat),1,INTER);	
+				
+		}else fwrite(&cand,sizeof(candidat),1,INTER);
+	
 	}
 	fclose (F);
 	fclose(INTER);
 	
+		
 	F=fopen("candidats.txt","w");
 	INTER=fopen("inter_statut.txt","r");
 	
@@ -254,6 +240,107 @@ void affichage (){
 	F=fopen("candidats.txt","r");
 	while (fread(&cand,sizeof(candidat),1,F))
 		printf (" %s \n",cand.nom );
+		printf ("numero du dossir : %d \n",cand.num_doss);
+		printf ("age: %d \n",cand.age);
+		printf ("le montant payant : %.2f \n",cand.mont_p);
+		printf ("le montnt restant : %.2f \n",cand.mont_r);
+		printf ("le nombre de seances : %d \n",cand.nb_seances);
+		printf ("les frais de lexamen de code : %.2f \n",cand.tab[1].frais);
+		printf ("le statut de lexamen de code : %d \n",cand.tab[1].statut);
+		printf ("les frais de lexamen de creneau : %.2f \n",cand.tab[2].frais);
+		printf ("le statut de lexamen de creneau : %d \n",cand.tab[2].statut);
+		printf ("les frais de lexamen de conduite : %.2f \n",cand.tab[3].frais);
+		printf("le statut de  lexamen de conduite : %d \n",cand.tab[3].statut);
+		
 	
 	fclose (F);
 }
+
+//procedure qui modifie les frais dun examen
+
+void mod_frais ( int num_doss){
+	FILE *F,*INTER;
+	char exam[10];
+	float somme;
+	int i;
+	candidat cand;
+	
+	F=fopen("candidats.txt","r");
+	INTER= fopen("inter_frais","w");
+	
+	printf ("donnez le nom de lexamen auquel vous voulez modifier les frais \n");
+	scanf(" %s",exam);
+	printf ("donnez la somme rajouteepar le candidat \n");
+	scanf ("%f",&somme);
+	
+	while (fread(&cand,sizeof(candidat),1,F)){
+		if (cand.num_doss==num_doss){
+			for (i=0;i<3;i++)
+				if (strcmp(cand.tab[i].nom, exam)==0){
+					cand.tab[i].frais=cand.tab[i].frais+somme;
+					if(cand.tab[i].frais>1000){
+						printf("la somme payee depasse les frais de lexamen, vous devez lui rendre : %.2f \n",cand.tab[i].frais-1000);
+					}
+				}
+			fwrite(&cand,sizeof(candidat),1,INTER);
+		}else fwrite(&cand,sizeof(candidat),1,INTER);
+	}
+	fclose(F);
+	fclose(INTER);
+	
+	
+	F=fopen("candidats.txt","w");
+	INTER= fopen("inter_frais","r");
+	
+	while (fread(&cand,sizeof(candidat),1,INTER)){
+		fwrite(&cand,sizeof(candidat),1,F);
+	}
+	fclose (F);
+	fclose (INTER);
+	
+}
+
+//procedure qui modifie le montant payee dun candidat 
+
+void mod_mont (int num_doss){
+	FILE *F,*INTER;
+	candidat cand,nv_cand;
+	float somme;
+	
+	
+	F=fopen("canidats.txt","r");
+	INTER=fopen("inter_mont","w");
+	
+	printf ("donnez la somme rajoutee par le candidat \n");
+	scanf ("%f",&somme);
+	
+	while (fread(&cand,sizeof(candidat),1,F)){
+		if (cand.num_doss==num_doss){
+			cand.mont_p=cand.mont_p+somme;
+			cand.mont_r=18000-(cand.mont_p);
+			
+			if (cand.mont_p>18000){
+				printf ("la somme depasse les frais du permis, vous devez lui rendre : %.2f \n",cand.mont_p-18000);
+			}
+			
+			nv_cand=cand;
+			fwrite(&cand,sizeof(candidat),1,INTER);
+		}else fwrite(&cand,sizeof(candidat),1,F);
+	}
+	fclose (F);
+	fclose (INTER);
+	
+	
+	F=fopen("canidats.txt","w");
+	INTER=fopen("inter_mont","r");
+	
+	while (fread(&cand,sizeof(candidat),1,INTER))
+		fwrite(&cand,sizeof(candidat),1,F);
+	
+	
+		
+	fclose(F);
+	fclose(INTER);
+	printf ("le nouveau montant restant est de : %.2f \n",nv_cand.mont_r);
+}
+
