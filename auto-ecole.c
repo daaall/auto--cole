@@ -25,6 +25,8 @@ int main () {
 	printf ("3-Supprimer un candidat \n");
 	printf ("4-Modifier le montant restant dun candidat \n");
 	printf ("5-Mettre a jour le statut dun examen \n");
+	printf ("6-afficher tous lescandidats \n");
+	printf ("7-quitter le prog \n");
 	
 	printf ("\n");
 	printf ("\n");
@@ -64,6 +66,13 @@ int main () {
 				scanf ("%d",&nb_doss);
 				modification_statut(num_doss);
 				printf ("\n");
+		break;
+		case 6 : printf ("la liste des candidats \n");
+				 affichage();
+				 printf ("\n");
+		break;
+		
+		case 7 : exit(0);
 		break;
 		default : printf ("le numero nexiste pas dans le menu \n \n");
 		break;

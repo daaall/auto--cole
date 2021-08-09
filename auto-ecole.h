@@ -1,5 +1,21 @@
+
+//fonction recherche
+bool exist (int num_doss){
+	FILE *F;
+	candidat cand;
+	bool trouv=false;
+	
+	F=fopen("candidats.txt","r");
+	while (fread(&cand,sizeof(candidat),1,F) && trouv==false){
+		if (cand.num_doss==num_doss)
+			trouv=true;
+	}
+	fclose(F);
+	return trouv;
+}
+
 //ajouter un candidat
-candidat  ajout (){
+void ajout (){
 	FILE *F;
 	candidat cand;
 	int i,val;
@@ -12,8 +28,11 @@ candidat  ajout (){
 	//demander les infos du candidat
 	printf ("introduisez le nom du candidat \n");
 	scanf (" %s",cand.nom);
+	do{
 	printf ("introduisez son numero de dosier \n");
 	scanf ("%d",&cand.num_doss);
+	}while (exist(cand.num_doss)==true);
+	
 	printf ("introduisez son age \n");
 	scanf ("%d",&cand.age);
 	printf ("introduisez le montant paye \n");
@@ -30,14 +49,9 @@ candidat  ajout (){
 	strcpy(cand.tab[2].nom,"conduite");
 	
 	
-	printf ("donnez les frais de lexamen de code  \n");
-	scanf ("%f",&cand.tab[0].frais);
-	printf ("donnez les frais de lexamen du creneau \n");
-	scanf ("%f",&cand.tab[1].frais);
-	printf ("donnez les frais de lexamen de conduite \n");
-	scanf ("%f",&cand.tab[2].frais);
 	for (i=0;i<3;i++){
 		cand.tab[i].statut=0;
+		cand.tab[i].frais=0;
 		}
 	
 	printf ("\n");
@@ -59,7 +73,6 @@ candidat  ajout (){
 		printf ("candidature non acceptee \n");
 	fclose (F);
 		
-	return cand;
 }
 
 
@@ -68,7 +81,7 @@ void suppression (){
 	candidat cand;
 	int num_doss,i;
 	FILE *F,*INTER;
-	bool jjj=false,kkk=false,iii=false;
+	bool jjj=false,kkk=true,iii=false;
 	
 	printf ("donnez le numero de dossier du candidat que vous voulez supprimer \n");
 	scanf ("%d",&num_doss);
@@ -78,46 +91,35 @@ void suppression (){
 	
 	while (fread (&cand,sizeof(candidat),1,F)){
 		if (cand.num_doss==num_doss){
-		
+			iii=true;
 			if (cand.mont_r==0){
 				jjj=true;
-			} 
+			}
+		 
 			
-			for (i=0;i<3;i++){
-				if(cand.tab[i].statut==1){
-					kkk=true;
+			i=0;
+			while (i<3 && kkk==true){
+				if(cand.tab[i].statut==0){
+					kkk=false;
 				}
 			}
-		}
+		}else fwrite(&cand,sizeof(candidat),1,INTER);
 	}
 	fclose (F);
-	
-	F=fopen("candidats.txt","r");
-	while (fread (&cand,sizeof(candidat),1,F)){
+	fclose(INTER);
+	if (jjj==true && kkk==true){
+		printf ("la suppression a ete effectuee avec reussite  \n");
 		
-			if( jjj==true && kkk==true)
-			iii==true; 
+		F=fopen ("candidats.txt","w");
+		INTER=fopen("candidats_inter.txt","r");
 	
-	
-			else fwrite(&cand,sizeof(candidat),1,INTER);
-	}	
-	
-	fclose(F);
-	fclose(INTER);
-	
-	F=fopen ("candidats.txt","w");
-	INTER=fopen("candidats_inter.txt","r");
-	
-	while (fread(&cand,sizeof(candidat),1,INTER))
-			fwrite(&cand,sizeof(candidat),1,F);
+		while (fread(&cand,sizeof(candidat),1,INTER))
+				fwrite(&cand,sizeof(candidat),1,F);
 			
-	fclose(F);
-	fclose(INTER);
-	
-	if (iii==true)
-				printf ("le candidat a ete supprime avec reussite \n");
-	else 
-				printf ("la suppression a echouee \n");
+		fclose(F);
+		fclose(INTER);
+	}else  
+		printf ("la suppression a echouee \n");
 	
 }
 		
@@ -128,38 +130,22 @@ void modification_montant(int num_doss, float somme){
 	bool jjj=false;
 	int i;
 	
-	F=fopen("candidats.txt","r");
-	while (fread(&cand,sizeof(candidat),1,F) && jjj==false){
-		if (cand.num_doss==num_doss)
-				jjj=true;
-	}
-	strcpy(nv_cand.nom,cand.nom);
-	nv_cand.age=cand.age;
-	nv_cand.mont_p=((cand.mont_p)+somme);
-	nv_cand.mont_r=(18000-(nv_cand.mont_p));
-	nv_cand.nb_seances=cand.nb_seances;
-	
-	for (i=0;i<3;i++){
-	strcpy(nv_cand.tab[i].nom,cand.tab[i].nom);
-	nv_cand.tab[i].frais=cand.tab[i].frais;
-	nv_cand.tab[i].statut=cand.tab[i].statut;
-	}
-	fclose(F);
-	
-	printf ("\n");
-	printf ("le nouveau montant restant de ce candidat est :  %.2f \n",nv_cand.mont_r);
-	
-	F=fopen("candidats.txt","r");
 	INTER=fopen("cand_INTER_mont.txt","w");
-	
+	F=fopen("candidats.txt","r");
 	while (fread(&cand,sizeof(candidat),1,F)){
-		if ((cand.num_doss) != (nv_cand.num_doss))
+		if (cand.num_doss==num_doss){
+			cand.mont_p=((cand.mont_p)+somme);
+			cand.mont_r=(18000-(nv_cand.mont_p));
+			
 			fwrite(&cand,sizeof(candidat),1,INTER);
-		else 
-			fwrite(&nv_cand,sizeof(candidat),1,INTER);
+			
+	}else fwrite(&cand,sizeof(candidat),1,INTER);
 	}
+	
 	fclose(F);
 	fclose(INTER);
+	printf ("\n");
+	
 	
 	F=fopen("candidats.txt","w");
 	INTER=fopen("cand_INTER_mont.txt","r");
@@ -235,27 +221,39 @@ void pass_exam (int num_doss , char exam[10]){
 	candidat cand;
 	int i;
 	FILE *F;
-	bool jjj=false,iii=false,nnn=false;
+	bool jjj=false,iii=false,nnn=true;
 	
 	F=fopen("candidats.txt","r");
 	while (fread(&cand,sizeof(candidat),1,F) && jjj==false){
-		if(cand.num_doss==num_doss)
+		if(cand.num_doss==num_doss){
 			jjj=true;
-	}
 	
-	if(cand.nb_seances>=5)
-		iii=true;
+	
+			if(cand.nb_seances>=5)
+				iii=true;
 		
-	for (i=0;i<3;i++){
-		if(strcmp(cand.tab[i].nom,exam))
-			if (cand.tab[i].frais==1000)
-				nnn=true;
+			while(i<3 && nnn==true){
+				if(strcmp(cand.tab[i].nom,exam)==0)
+					if (cand.tab[i].frais!=1000)
+						nnn=false;
+			}
+		}
 	}
-	
 	if(iii==true && nnn==true)
 		printf ("le candidat a le droit de passer cet examen \n");
 	else 
 		printf ("le candidat na pas le droit de passer cet examen \n");
 	
 	fclose (F); 
+}
+
+void affichage (){
+	FILE *F;
+	candidat cand;
+	
+	F=fopen("candidats.txt","r");
+	while (fread(&cand,sizeof(candidat),1,F))
+		printf (" %s \n",cand.nom );
+	
+	fclose (F);
 }
